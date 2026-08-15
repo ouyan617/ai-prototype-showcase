@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>建科大楼项目 · 空间资产管理</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; background:#f5f6fa; color:#333; font-size:14px; }
+.app { display:flex; min-height:100vh; }
+.sidebar { width:180px; background:#1f2633; color:#fff; flex-shrink:0; }
+.sidebar-title { padding:18px 20px; font-size:16px; font-weight:500; border-bottom:1px solid rgba(255,255,255,0.08); }
+.nav-item { padding:13px 20px; cursor:pointer; color:#b8c0cc; font-size:13px; display:flex; align-items:center; gap:10px; }
+.nav-item:hover { background:#2a3447; color:#fff; }
+.nav-item.active { background:#1890ff; color:#fff; }
+.main { flex:1; display:flex; flex-direction:column; min-width:0; }
+.header { height:56px; background:#fff; border-bottom:1px solid #e8e8e8; display:flex; align-items:center; padding:0 24px; justify-content:space-between; }
+.content { flex:1; padding:20px; overflow:auto; }
+.card { background:#fff; border-radius:8px; padding:20px; margin-bottom:16px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+.card-title { font-size:15px; font-weight:500; margin-bottom:16px; border-left:3px solid #1890ff; padding-left:10px; color:#262626; }
+.card-subtitle { font-size:13px; font-weight:500; margin-bottom:12px; color:#595959; }
+.form-row { display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; align-items:flex-end; }
+.form-item { display:flex; flex-direction:column; gap:6px; }
+.form-item label { font-size:13px; color:#595959; }
+.form-item .hint { font-size:12px; color:#bfbfbf; }
+input, select { padding:8px 12px; border:1px solid #d9d9d9; border-radius:4px; outline:none; font-size:13px; }
+input:focus, select:focus { border-color:#1890ff; }
+.btn { padding:8px 16px; border-radius:4px; border:1px solid transparent; cursor:pointer; font-size:13px; transition:all .2s; }
+.btn-primary { background:#1890ff; color:#fff; }
+.btn-primary:hover { background:#40a9ff; }
+.btn-default { background:#fff; border-color:#d9d9d9; color:#595959; }
+.btn-default:hover { border-color:#1890ff; color:#1890ff; }
+.btn-danger { background:#fff; border-color:#ff4d4f; color:#ff4d4f; }
+.btn-warning { background:#fff; border-color:#faad14; color:#faad14; }
+.btn-warning:hover { background:#fffbe6; border-color:#ffc53d; color:#ffc53d; }
+.btn-sm { padding:4px 10px; font-size:12px; }
+.toolbar { display:flex; gap:10px; margin-bottom:16px; align-items:center; flex-wrap:wrap; }
+.tree { border:1px solid #f0f0f0; border-radius:6px; padding:12px; height:100%; min-height:500px; overflow:auto; }
+.tree-search { margin-bottom:10px; }
+.tree-node { padding:4px 0; cursor:pointer; user-select:none; }
+.tree-children { padding-left:18px; }
+.tree-arrow { display:inline-block; width:12px; color:#8c8c8c; font-size:11px; }
+.tree-checkbox { margin-right:6px; }
+.view-switch { display:flex; gap:8px; margin-bottom:12px; }
+.view-switch button { background:#fff; border:1px solid #d9d9d9; }
+.view-switch button.active { background:#1890ff; color:#fff; border-color:#1890ff; }
+.timetable-wrap { border:1px solid #f0f0f0; border-radius:6px; overflow:auto; }
+.timetable-grid { display:grid; grid-template-columns:46px repeat(7,1fr); gap:1px; background:#f0f0f0; min-width:560px; }
+.timetable-grid > div { background:#fff; min-height:28px; display:flex; align-items:center; justify-content:center; font-size:12px; position:relative; }
+.timetable-grid .head { background:#fafafa; font-weight:500; color:#595959; }
+.timetable-grid .time-label { background:#fafafa; color:#8c8c8c; font-size:11px; }
+.timetable-grid .cell { cursor:pointer; user-select:none; background:#f5f5f5; }
+.timetable-grid .cell:hover { opacity:0.85; }
+.timetable-grid .cell.selected { outline:2px solid #1890ff; outline-offset:-2px; z-index:1; }
+.cell.bookable { background:#52c41a !important; }
+.cell.occupied { background:#ff4d4f !important; }
+.calendar-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:#f0f0f0; border:1px solid #f0f0f0; }
+.calendar-grid > div { background:#fff; min-height:90px; padding:8px; cursor:pointer; position:relative; }
+.calendar-grid .head { background:#fafafa; min-height:36px; display:flex; align-items:center; justify-content:center; font-weight:500; color:#595959; }
+.calendar-grid .day { font-size:13px; color:#262626; }
+.calendar-grid .day.other-month { color:#bfbfbf; background:#fafafa; }
+.calendar-grid .day.workday { background:#e6f7ff; }
+.calendar-grid .day.bookable { background:#52c41a; color:#fff; }
+.calendar-grid .day.occupied { background:#ff4d4f; color:#fff; }
+.calendar-grid .day .day-num { position:absolute; top:6px; left:8px; }
+.calendar-grid .day .day-info { position:absolute; bottom:6px; right:8px; font-size:11px; }
+.legend { display:flex; gap:16px; margin-top:10px; font-size:12px; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:6px; }
+.legend-color { width:14px; height:14px; border-radius:3px; }
+.week-nav { display:flex; align-items:center; gap:12px; margin-bottom:12px; font-size:13px; color:#595959; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { padding:10px 12px; text-align:left; border-bottom:1px solid #f0f0f0; }
+th { background:#fafafa; color:#595959; font-weight:500; }
+tr:hover td { background:#fafafa; }
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:12px; line-height:1.5; }
+.tag-gn { background:#f6ffed; color:#52c41a; border:1px solid #b7eb8f; }
+.tag-rd { background:#fff1f0; color:#f5222d; border:1px solid #ffa39e; }
+.tag-og { background:#fff7e6; color:#fa8c16; border:1px solid #ffd591; }
+.tag-gy { background:#f5f5f5; color:#666; border:1px solid #d9d9d9; }
+.action-link { color:#1890ff; cursor:pointer; margin-right:8px; font-size:13px; }
+.action-link:hover { text-decoration:underline; }
+.action-link-danger { color:#ff4d4f; }
+.modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:100; }
+.modal.active { display:flex; }
+.modal-body { background:#fff; border-radius:8px; padding:24px; width:520px; max-height:85vh; overflow:auto; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
+.modal-title { font-size:16px; font-weight:500; margin-bottom:16px; }
+.modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+.context-menu { display:none; position:fixed; background:#fff; border:1px solid #e8e8e8; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.15); z-index:200; padding:4px 0; min-width:140px; }
+.context-menu-item { padding:8px 16px; cursor:pointer; font-size:13px; }
+.context-menu-item:hover { background:#f5f5f5; }
+.radio-group { display:flex; gap:16px; align-items:center; }
+.radio-group label { display:flex; align-items:center; gap:6px; cursor:pointer; }
+.calendar-input { display:flex; gap:10px; align-items:center; }
+.calendar-input input { flex:1; }
+.toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.75); color:#fff; padding:10px 20px; border-radius:4px; font-size:13px; z-index:300; display:none; }
+.flex { display:flex; }
+.flex-1 { flex:1; min-width:0; }
+.gap-16 { gap:16px; }
+.hide { display:none !important; }
+.status-badge { cursor:pointer; }
+
+/* 标签页 */
+.tabs { display:flex; border-bottom:1px solid #e8e8e8; margin-bottom:16px; }
+.tab { padding:10px 20px; cursor:pointer; color:#595959; font-size:14px; border-bottom:2px solid transparent; margin-bottom:-1px; }
+.tab:hover { color:#1890ff; }
+.tab.active { color:#1890ff; border-bottom-color:#1890ff; }
+
+/* 模板列表 */
+.template-row { display:flex; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0; cursor:pointer; }
+.template-row:hover { background:#fafafa; }
+.template-row.selected { background:#e6f7ff; }
+
+/* 资产管理筛选 */
+.filter-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; align-items:end; margin-bottom:16px; }
+.filter-grid .form-item label { font-size:13px; color:#262626; margin-bottom:6px; }
+.filter-grid .form-item input, .filter-grid .form-item select { width:100%; }
+.filter-grid .range { display:flex; align-items:center; gap:8px; }
+.filter-grid .range input { flex:1; }
+.filter-grid .range span { color:#bfbfbf; font-size:12px; white-space:nowrap; }
+.filter-actions { display:flex; gap:8px; }
+.asset-toolbar { display:flex; gap:10px; margin-top:16px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-title">空间资产管理</div>
+    <div class="nav-item" data-page="home" onclick="showPage('home')">主页</div>
+    <div class="nav-item active" data-page="asset" onclick="showPage('asset')">资产管理</div>
+    <div class="nav-item" data-page="service">服务内容配置</div>
+    <div class="nav-item" data-page="setting" onclick="showPage('setting')">预约设置</div>
+    <div class="nav-item" data-page="pay">支付设置</div>
+    <div class="nav-item" data-page="lease">租赁合同</div>
+    <div class="nav-item" data-page="shop">空间商城</div>
+    <div class="nav-item" data-page="order">订单管理</div>
+    <div class="nav-item" data-page="bill">账单管理</div>
+  </div>
+  <div class="main">
+    <div class="header">
+      <div style="font-size:16px; font-weight:500;">建科大楼项目</div>
+      <div style="font-size:13px; color:#8c8c8c;" id="breadcrumb">主页 / 资产管理</div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="context-menu" id="contextMenu">
+  <div class="context-menu-item" onclick="markCells('bookable')">设为可预约</div>
+  <div class="context-menu-item" onclick="markCells('occupied')">设为固定占用</div>
+  <div class="context-menu-item" onclick="clearCells()">清除</div>
+</div>
+
+<div class="modal" id="uniformModal">
+  <div class="modal-body">
+    <div class="modal-title" id="uniformTitle">统一配置</div>
+    <div class="form-row">
+      <div class="form-item" style="flex:1;"><label>开始时间</label>
+        <input type="time" id="uStart" value="08:00">
+      </div>
+      <div class="form-item" style="flex:1;"><label>结束时间</label>
+        <input type="time" id="uEnd" value="18:00">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-item" style="flex:1;"><label>状态</label>
+        <select id="uState"><option value="bookable">可预约</option><option value="occupied">固定占用</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="hideModal('uniformModal')">取消</button>
+      <button class="btn btn-primary" onclick="applyUniform()">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="closeModal">
+  <div class="modal-body">
+    <div class="modal-title">临时关停</div>
+    <div class="form-row">
+      <div class="form-item" style="flex:1;"><label>关停开始日期</label><input type="date" id="closeStart"></div>
+      <div class="form-item" style="flex:1;"><label>关停结束日期</label><input type="date" id="closeEnd"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-item" style="flex:1;"><label>每天时段</label>
+        <div class="flex gap-16"><input type="time" id="closeTimeStart" value="00:00"><input type="time" id="closeTimeEnd" value="24:00"></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-item" style="flex:1;"><label>备注</label><input type="text" id="closeNote" placeholder="请输入关停原因"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="hideModal('closeModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmClose()">确定关停</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="reconfigModal">
+  <div class="modal-body" style="width:360px;">
+    <div class="modal-title">确认重新配置</div>
+    <div style="color:#595959; font-size:13px;">确认重新配置吗？</div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="hideModal('reconfigModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmReconfig()">确认</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="templateModal">
+  <div class="modal-body">
+    <div class="modal-title">选择预约时间模板</div>
+    <div id="templateList" style="max-height:300px; overflow:auto; border:1px solid #f0f0f0; border-radius:4px; padding:0 12px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="hideModal('templateModal')">取消</button>
+      <button class="btn btn-primary" onclick="selectTemplate()">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentPage='asset';
+let viewMode='week';
+let statusViewMode='week';
+let currentDate=new Date();
+let selectedCells=new Set();
+let cellStates={};
+let isDragging=false;
+let dragStart=null;
+let uniformScope='';
+let settingMode='list';
+let statusTab='history';
+let selectedTemplateId=null;
+let editingTemplateId=null;
+
+function hourOptions(end=false){
+  let s='';
+  for(let h=0;h<=24;h+=2) s+=`<option value="${h}">${h}:00</option>`;
+  if(end) s=s.replace('<option value="0">0:00</option>','<option value="0">0:00</option>').replace('</option>',`</option>`).replace(/<option value="24">24:00<\/option>/,'<option value="24" selected>24:00</option>');
+  return s;
+}
+
+let assets=[
+  {id:1,name:'办公室1',code:'JKDL-F4-001',type:'办公空间',area:49.217,capacity:12,floor:'10F',space:'F10北区夹层',rentUse:'出租',rentMode:'开放',listing:true,busy:false},
+  {id:2,name:'办公室1',code:'JKDL-F4-001',type:'办公空间',area:49.217,capacity:12,floor:'10F',space:'-',rentUse:'出租',rentMode:'开放',listing:true,busy:false},
+  {id:3,name:'办公室1',code:'JKDL-F4-001',type:'办公空间',area:49.217,capacity:12,floor:'10F',space:'-',rentUse:'出租',rentMode:'开放',listing:true,busy:true},
+  {id:4,name:'办公室1',code:'JKDL-F4-001',type:'办公空间',area:49.217,capacity:12,floor:'10F',space:'-',rentUse:'出租',rentMode:'收租金',listing:true,busy:false},
+  {id:5,name:'办公室1',code:'JKDL-F4-001',type:'办公空间',area:49.217,capacity:12,floor:'10F',space:'-',rentUse:'自用',rentMode:'',listing:true,busy:false},
+  {id:6,name:'办公室1',code:'JKDL-F4-001',type:'办公空间',area:49.217,capacity:12,floor:'10F',space:'-',rentUse:'出租',rentMode:'开放',listing:false,busy:false}
+];
+let treeData=[
+  {id:'all',name:'全选',children:[
+    {id:'jk',name:'建科大楼',children:[
+      {id:'10f',name:'10F-夹层',children:[
+        {id:'z002',name:'预约办公位002'},{id:'z003',name:'预约办公位003'},{id:'z004',name:'预约办公位004'},
+        {id:'z010',name:'预约办公位010'},{id:'z009',name:'预约办公位009'},{id:'z011',name:'预约办公位011'},
+        {id:'z008',name:'预约办公位008'},{id:'z001',name:'预约办公位001'},{id:'z006',name:'预约办公位006'},
+        {id:'z007',name:'预约办公位007'},{id:'z012',name:'预约办公位012'},{id:'z013',name:'预约办公位013'}
+      ]},
+      {id:'b1',name:'负一层',children:[
+        {id:'b1bgs',name:'B1办公室'},{id:'b1zt',name:'B1展厅'},{id:'b1sk',name:'B1书吧'},{id:'b1gg',name:'B1公共空间'}
+      ]},
+      {id:'f2',name:'2楼',children:[
+        {id:'f2gg',name:'F2公共空间'},{id:'f2nq',name:'F2南区办公室'},{id:'f2bq',name:'F2北区办公室'}
+      ]}
+    ]}
+  ]}
+];
+let templates=[
+  {id:1,name:'全时段服务'},
+  {id:2,name:'工作日上午'},
+  {id:3,name:'全年7*24'}
+];
+
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
+function showPage(p, params){
+  currentPage=p;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.page===p));
+  const bc=document.getElementById('breadcrumb');
+  if(p==='home'||p==='asset'){ bc.textContent='主页 / 资产管理'; renderAssetPage(); }
+  else if(p==='setting'){
+    if(params==='editor'){
+      bc.textContent='主页 / 基础设置 / 预约设置 / 编辑模板';
+      renderSettingEditor();
+    } else {
+      settingMode='list';
+      bc.textContent='主页 / 基础设置 / 预约设置';
+      renderSettingListPage();
+    }
+  }
+  else if(p==='status'){ bc.textContent='主页 / 资产管理 / 预约管理'; renderStatusPage(); }
+  else { bc.textContent='主页 / '+p; document.getElementById('content').innerHTML='<div class="card">功能开发中</div>'; }
+}
+
+function assetStatus(a){
+  if(!a.listing) return {code:'unconfigured', text:'未配置', cls:'tag-og'};
+  if(a.busy) return {code:'unavailable', text:'不可预约', cls:'tag-rd'};
+  if(a.rentUse==='自用') return {code:'unavailable', text:'不可预约', cls:'tag-rd'};
+  if(a.rentUse==='出租' && a.rentMode==='收租金') return {code:'unavailable', text:'不可预约', cls:'tag-rd'};
+  return {code:'bookable', text:'可预约', cls:'tag-gn'};
+}
+function statusTag(s){ return `<span class="tag ${s.cls} status-badge">${s.text}</span>`; }
+
+function renderAssetPage(){
+  let html=`<div class="card">
+    <div class="filter-grid">
+      <div class="form-item">
+        <label>空间搜索</label>
+        <input type="text" placeholder="可输入名称/编号">
+      </div>
+      <div class="form-item">
+        <label>空间类型</label>
+        <select><option>请选择空间类型</option><option>办公空间</option><option>会议室</option><option>展厅</option></select>
+      </div>
+      <div class="form-item">
+        <label>出租/自用</label>
+        <select><option>请选择招租状态</option><option>出租</option><option>自用</option></select>
+      </div>
+      <div class="form-item">
+        <label>面积区间</label>
+        <div class="range"><input type="text" placeholder="最小面积"><span>至</span><input type="text" placeholder="最大面积"></div>
+      </div>
+      <div class="form-item">
+        <label>上下架状态</label>
+        <select><option>请选择上下架状态</option><option>已上架</option><option>未上架</option></select>
+      </div>
+      <div class="form-item" style="grid-column:span 4;"></div>
+      <div class="form-item filter-actions" style="justify-content:flex-end;">
+        <button class="btn btn-primary">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+    <div class="asset-toolbar">
+      <button class="btn btn-primary"><span style="margin-right:4px;">↻</span>同步空间信息</button>
+      <button class="btn btn-primary">+ 添加空间</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox"></th>
+          <th>空间名称</th><th>空间编号</th><th>空间类型</th><th>空间面积</th><th>可容纳人数</th><th>楼层</th><th>所属空间</th>
+          <th>预约状态</th><th>出租/自用</th><th>交易类型</th><th>使用状态</th><th>产品标签</th><th>操作</th>
+        </tr>
+      </thead>
+      <tbody>`;
+  assets.forEach(a=>{
+    const s=assetStatus(a);
+    const click=s.code==='unconfigured'?`onclick="openAssetSetting()"`:`onclick="showPage('status')"`;
+    html+=`<tr>
+      <td><input type="checkbox"></td>
+      <td>${a.name}</td><td>${a.code}</td><td>${a.type}</td><td>${a.area}</td><td>${a.capacity}</td><td>${a.floor}</td><td>${a.space}</td>
+      <td><span class="tag ${s.cls} status-badge" ${click} style="cursor:pointer;">${s.text}</span></td>
+      <td>${a.rentUse}</td>
+      <td>合同</td><td>空置中</td><td>环境好</td>
+      <td>
+        <span class="action-link" onclick="showPage('status')">编辑</span>
+        <span class="action-link action-link-danger" onclick="deleteAsset(${a.id})">删除</span>
+        <span class="action-link" onclick="toggleListing(${a.id})">${a.listing?'下架':'上架'}</span>
+      </td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  document.getElementById('content').innerHTML=html;
+}
+function editAsset(id){ showToast('编辑空间 #'+id); }
+function deleteAsset(id){ if(confirm('确定删除?')){ assets=assets.filter(a=>a.id!==id); renderAssetPage(); } }
+function toggleListing(id){ const a=assets.find(x=>x.id===id); if(a){ a.listing=!a.listing; renderAssetPage(); } }
+
+function renderTree(nodes,level=0){
+  let html='<div class="tree-children">';
+  nodes.forEach(n=>{
+    const has=n.children&&n.children.length;
+    html+=`<div class="tree-node" style="padding-left:${level*14}px;">
+      <span class="tree-arrow" onclick="toggleTree(event)">${has?'▼':'·'}</span>
+      <input type="checkbox" class="tree-checkbox" onchange="onTreeCheck(this)">
+      <span>${n.name}</span>
+    </div>`;
+    if(has) html+=renderTree(n.children,level+1);
+  });
+  html+='</div>';
+  return html;
+}
+function toggleTree(e){ const arrow=e.target; const children=arrow.closest('.tree-node').nextElementSibling; if(children){ const hidden=children.style.display==='none'; children.style.display=hidden?'block':'none'; arrow.textContent=hidden?'▼':'▶'; } }
+function onTreeCheck(cb){ const children=cb.closest('.tree-node').nextElementSibling; if(children){ children.querySelectorAll('input[type=checkbox]').forEach(c=>c.checked=cb.checked); } }
+
+function formatDate(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function parseDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function getWeekStart(d){ const r=new Date(d); const day=r.getDay(); const diff=(day===0?-6:1)-day; r.setDate(r.getDate()+diff); r.setHours(0,0,0,0); return r; }
+function getWeekDays(start){ const arr=[]; for(let i=0;i<7;i++) arr.push(addDays(start,i)); return arr; }
+function cellKey(date,hour){ return `${formatDate(date)}_${hour}`; }
+function getCellState(date,hour){ return cellStates[cellKey(date,hour)] || ''; }
+function setCellState(date,hour,state){ if(state) cellStates[cellKey(date,hour)]=state; else delete cellStates[cellKey(date,hour)]; }
+function hasBookableDay(date){ for(let h=0;h<24;h+=2) if(getCellState(date,h)==='bookable') return true; return false; }
+function hasOccupiedDay(date){ for(let h=0;h<24;h+=2) if(getCellState(date,h)==='occupied') return true; return false; }
+
+const holidays2026=[
+  '2026-01-01','2026-01-02','2026-01-03',
+  '2026-02-15','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-02-21','2026-02-22','2026-02-23',
+  '2026-04-04','2026-04-05','2026-04-06',
+  '2026-05-01','2026-05-02','2026-05-03','2026-05-04','2026-05-05',
+  '2026-06-19','2026-06-20','2026-06-21',
+  '2026-09-25','2026-09-26','2026-09-27',
+  '2026-10-01','2026-10-02','2026-10-03','2026-10-04','2026-10-05','2026-10-06','2026-10-07'
+];
+const adjustedWorkdays2026=['2026-01-04','2026-02-14','2026-02-28','2026-05-09','2026-09-20','2026-10-10'];
+function isWorkday2026(d){
+  if(d.getFullYear()!==2026) return false;
+  const s=formatDate(d);
+  if(adjustedWorkdays2026.includes(s)) return true;
+  if(holidays2026.includes(s)) return false;
+  const day=d.getDay();
+  return day>=1 && day<=5;
+}
+
+function renderSettingListPage(){
+  let html=`<div class="card">
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="newTemplate()">+ 增加预约时间模板</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px;">序号</th>
+          <th>预约时间模板</th>
+          <th style="width:140px; text-align:right;">操作</th>
+        </tr>
+      </thead>
+      <tbody>`;
+  templates.forEach((t,idx)=>{
+    html+=`<tr>
+      <td>${idx+1}</td>
+      <td>${t.name}</td>
+      <td style="text-align:right;">
+        <span class="action-link" onclick="editTemplate(${t.id})">编辑</span>
+        <span class="action-link action-link-danger" onclick="deleteTemplate(${t.id})">删除</span>
+      </td>
+    </tr>`;
+  });
+  html+=`</tbody></table>
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px; color:#8c8c8c; font-size:13px;">
+      <span>共 ${templates.length} 条</span>
+      <span>10条/页</span>
+      <span>&lt; 1 &gt;</span>
+      <span>前往 1 页</span>
+    </div>
+  </div>`;
+  document.getElementById('content').innerHTML=html;
+}
+function newTemplate(){ editingTemplateId=null; settingMode='template-list'; showPage('setting','editor'); }
+function editTemplate(id){ editingTemplateId=id; settingMode='template-list'; showPage('setting','editor'); }
+function deleteTemplate(id){ if(confirm('确定删除该模板?')){ templates=templates.filter(t=>t.id!==id); renderSettingListPage(); } }
+function openAssetSetting(){ editingTemplateId=null; settingMode='asset'; showPage('setting','editor'); }
+
+function renderSettingEditor(){
+  const isAssetMode=settingMode==='asset';
+  const tplName=editingTemplateId?(templates.find(t=>t.id===editingTemplateId)||{}).name:(isAssetMode?'':'全时段服务');
+  let html=`<div class="${isAssetMode?'':'flex gap-16'}">
+    ${isAssetMode?'':`<div style="width:260px; flex-shrink:0;">
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:14px 16px; border-bottom:1px solid #f0f0f0; font-weight:500;">绑定空间产品</div>
+        <div style="padding:12px;">
+          <input type="text" class="tree-search" placeholder="按enter查询空间产品" style="width:100%;">
+          <div class="tree">${renderTree(treeData)}</div>
+        </div>
+      </div>
+    </div>`}
+    <div class="flex-1">
+      <div class="card">
+        <div class="card-title">预约时间模板名称</div>
+        <div class="form-row" style="align-items:flex-end;">
+          <div class="form-item" style="flex:1; max-width:480px;">
+            <label>预约时间模板名称 <span style="color:#ff4d4f;">*</span></label>
+            <input type="text" id="templateName" value="${tplName||''}" placeholder="请输入模板名称" maxlength="100">
+          </div>
+          ${isAssetMode?`<button class="btn btn-primary" onclick="openTemplateModal()">选择模板</button>`:''}
+        </div>
+        <div class="hint" style="text-align:right;">${(tplName||'').length}/100</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">工作日历设置</div>
+        <div class="form-row">
+          <div class="form-item" style="flex:1; max-width:480px;">
+            <label>工作日历 <span style="color:#ff4d4f;">*</span></label>
+            <div class="calendar-input">
+              <input type="text" value="上传日历后自动生成" readonly>
+              <button class="btn btn-primary">日历下载</button>
+              <button class="btn btn-primary">日历上传</button>
+            </div>
+            <div class="hint">如未设置，默认为不可预定</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div class="card-title" style="margin:0;">${viewMode==='week'?'时刻表':'日历表'}</div>
+          <div class="view-switch">
+            <button class="${viewMode==='week'?'active':''}" onclick="switchView('week')">时刻表</button>
+            <button class="${viewMode==='month'?'active':''}" onclick="switchView('month')">日历表</button>
+          </div>
+        </div>
+        ${viewMode==='week'?renderWeekView(true):renderMonthView(true)}
+        <div class="legend">
+          <div class="legend-item"><div class="legend-color" style="background:#52c41a;"></div>可预约</div>
+          <div class="legend-item"><div class="legend-color" style="background:#ff4d4f;"></div>固定占用</div>
+          <div class="legend-item"><div class="legend-color" style="background:#e6f7ff; border:1px solid #91d5ff;"></div>2026法定工作日</div>
+          <div class="legend-item"><div class="legend-color" style="background:#f5f5f5; border:1px solid #d9d9d9;"></div>未配置/不可用</div>
+        </div>
+        ${viewMode==='week'?`
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button class="btn btn-default" onclick="showUniform('daily')">每日预约统一配置</button>
+          <button class="btn btn-default" onclick="showUniform('workday')">工作日预约统一配置</button>
+          <button class="btn btn-default" onclick="showUniform('weekend')">周末预约统一配置</button>
+        </div>`:''}
+      </div>
+
+      <div class="card">
+        <div class="card-title">其他设置</div>
+        <div class="card-subtitle">预约有效时间设置</div>
+        <div class="form-row">
+          <div class="form-item"><label>提前</label><div style="display:flex; align-items:center; gap:6px;"><input type="number" value="15" style="width:70px;"><span>分钟进场有效</span></div></div>
+          <div class="form-item"><label>超时</label><div style="display:flex; align-items:center; gap:6px;"><input type="number" value="15" style="width:70px;"><span>分钟</span></div></div>
+          <div class="form-item"><label>场地</label><div style="display:flex; align-items:center; gap:6px;"><input type="number" value="7" style="width:70px;"><span>天前可预约</span></div></div>
+          <div class="form-item"><label>最长预约时间区间长度</label><div style="display:flex; align-items:center; gap:6px;"><input type="number" value="4" style="width:70px;"><select><option>小时</option><option>天</option></select></div></div>
+        </div>
+        <div class="card-subtitle">场地管理</div>
+        <div class="form-row">
+          <div class="form-item" style="flex:1;"><label>负责人</label><input type="text" placeholder="请输入"></div>
+          <div class="form-item" style="flex:1;"><label>联系电话</label><input type="text" placeholder="请输入"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">预订确认方式</div>
+        <div class="radio-group" style="margin-bottom:12px;">
+          <label><input type="radio" name="confirm" value="manual"> 人工确认</label>
+          <select style="width:100px;"><option>30分钟</option><option>1小时</option><option>2小时</option></select>
+          <span style="color:#8c8c8c; font-size:13px;">超时未确认将自动取消订单</span>
+        </div>
+        <div class="radio-group">
+          <label><input type="radio" name="confirm" value="auto" checked> 自动确认</label>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:12px; margin-top:20px;">
+        <button class="btn btn-primary" style="padding:10px 32px;" onclick="saveSetting()">配置</button>
+        <button class="btn btn-default" style="padding:10px 32px;" onclick="cancelSetting()">取消</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('content').innerHTML=html;
+  if(viewMode==='week') attachCellEvents();
+}
+function cancelSetting(){ if(settingMode==='template-list') showPage('setting'); else showPage('asset'); }
+
+function renderWeekView(editable,ctx='setting'){
+  const start=getWeekStart(currentDate);
+  const days=getWeekDays(start);
+  const navFn=ctx==='status'?'changeStatusWeek':'changeWeek';
+  let html=`<div class="week-nav">
+    <button class="btn btn-sm btn-default" onclick="${navFn}(-7)">← 上周</button>
+    <span>${formatDate(days[0])} 至 ${formatDate(days[6])}</span>
+    <button class="btn btn-sm btn-default" onclick="${navFn}(7)">下周 →</button>
+  </div>
+  <div class="timetable-wrap">
+    <div class="timetable-grid" id="timetableGrid" ${editable?'oncontextmenu="showContextMenu(event)"':''}>
+      <div class="head"></div>${days.map(d=>`<div class="head">${['周日','周一','周二','周三','周四','周五','周六'][d.getDay()]}<br><span style="font-size:11px;color:#8c8c8c;">${d.getMonth()+1}/${d.getDate()}</span></div>`).join('')}`;
+  for(let h=0;h<24;h+=2){
+    html+=`<div class="time-label">${h}:00</div>`;
+    for(let d of days){
+      const state=getCellState(d,h);
+      const cls=state || '';
+      html+=`<div class="cell ${cls}" data-date="${formatDate(d)}" data-hour="${h}" ${editable?'':'style="cursor:default;"'}></div>`;
+    }
+  }
+  html+=`</div></div>`;
+  return html;
+}
+
+function renderMonthView(editable,ctx='setting'){
+  const year=currentDate.getFullYear(), month=currentDate.getMonth();
+  const firstDay=new Date(year,month,1);
+  const start=addDays(firstDay, -firstDay.getDay());
+  const navFn=ctx==='status'?'changeStatusMonth':'changeMonth';
+  const clickFn=ctx==='status'?'goToStatusDate':'goToDate';
+  let html=`<div class="week-nav">
+    <button class="btn btn-sm btn-default" onclick="${navFn}(-1)">← 上个月</button>
+    <span style="font-size:15px; font-weight:500;">${year}年 ${month+1}月</span>
+    <button class="btn btn-sm btn-default" onclick="${navFn}(1)">下个月 →</button>
+  </div>
+  <div class="calendar-grid">
+    <div class="head">日</div><div class="head">一</div><div class="head">二</div><div class="head">三</div><div class="head">四</div><div class="head">五</div><div class="head">六</div>`;
+  for(let i=0;i<42;i++){
+    const d=addDays(start,i);
+    const isOther=d.getMonth()!==month;
+    let cls='day'+(isOther?' other-month':'');
+    if(hasOccupiedDay(d)) cls+=' occupied';
+    else if(hasBookableDay(d)) cls+=' bookable';
+    else if(isWorkday2026(d)) cls+=' workday';
+    html+=`<div class="${cls}" onclick="${clickFn}('${formatDate(d)}')">
+      <div class="day-num">${d.getDate()}</div>
+      ${hasBookableDay(d)?'<div class="day-info">可预约</div>':''}
+    </div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+function switchView(mode){ viewMode=mode; renderSettingEditor(); }
+function changeWeek(n){ currentDate=addDays(currentDate,n); renderSettingEditor(); }
+function changeMonth(n){ currentDate=addDays(currentDate, n*30); currentDate=new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); renderSettingEditor(); }
+function goToDate(s){ currentDate=parseDate(s); viewMode='week'; renderSettingEditor(); }
+
+function switchStatusView(mode){ statusViewMode=mode; renderStatusPage(); }
+function changeStatusWeek(n){ currentDate=addDays(currentDate,n); renderStatusPage(); }
+function changeStatusMonth(n){ currentDate=addDays(currentDate, n*30); currentDate=new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); renderStatusPage(); }
+function goToStatusDate(s){ currentDate=parseDate(s); statusViewMode='week'; renderStatusPage(); }
+
+function attachCellEvents(){
+  document.querySelectorAll('.timetable-grid .cell').forEach(cell=>{
+    cell.addEventListener('mousedown',e=>{ if(e.button!==0) return; e.preventDefault(); isDragging=true; dragStart=cell; clearSelection(); toggleSelect(cell); });
+    cell.addEventListener('mouseenter',()=>{ if(isDragging && dragStart){ toggleSelect(cell,true); } });
+  });
+  document.addEventListener('mouseup',()=>{ isDragging=false; dragStart=null; });
+  document.addEventListener('click',e=>{ if(!e.target.closest('.context-menu')) hideContextMenu(); });
+}
+function toggleSelect(cell,add=false){
+  const key=`${cell.dataset.date}_${cell.dataset.hour}`;
+  if(add){ selectedCells.add(key); cell.classList.add('selected'); }
+  else { if(selectedCells.has(key)){ selectedCells.delete(key); cell.classList.remove('selected'); } else { selectedCells.add(key); cell.classList.add('selected'); } }
+}
+function clearSelection(){ selectedCells.clear(); document.querySelectorAll('.cell.selected').forEach(c=>c.classList.remove('selected')); }
+function showContextMenu(e){ e.preventDefault(); const cell=e.target.closest('.cell'); if(!cell) return; const key=`${cell.dataset.date}_${cell.dataset.hour}`; if(!selectedCells.has(key)){ clearSelection(); selectedCells.add(key); cell.classList.add('selected'); } const menu=document.getElementById('contextMenu'); menu.style.display='block'; menu.style.left=e.clientX+'px'; menu.style.top=e.clientY+'px'; }
+function hideContextMenu(){ document.getElementById('contextMenu').style.display='none'; }
+function markCells(type){ selectedCells.forEach(key=>{ cellStates[key]=type; const [date,hour]=key.split('_'); const cell=document.querySelector(`.cell[data-date="${date}"][data-hour="${hour}"]`); if(cell){ cell.className='cell '+type; } }); selectedCells.clear(); document.querySelectorAll('.cell.selected').forEach(c=>c.classList.remove('selected')); hideContextMenu(); }
+function clearCells(){ selectedCells.forEach(key=>{ delete cellStates[key]; const [date,hour]=key.split('_'); const cell=document.querySelector(`.cell[data-date="${date}"][data-hour="${hour}"]`); if(cell){ cell.className='cell'; } }); selectedCells.clear(); document.querySelectorAll('.cell.selected').forEach(c=>c.classList.remove('selected')); hideContextMenu(); }
+
+function showUniform(scope){ uniformScope=scope; const titles={daily:'每日预约统一配置', workday:'工作日预约统一配置', weekend:'周末预约统一配置'}; document.getElementById('uniformTitle').textContent=titles[scope]; document.getElementById('uniformModal').classList.add('active'); }
+function parseTime(t){
+  const [h,m]=t.split(':').map(Number);
+  return h+(m||0)/60;
+}
+function applyUniform(){
+  const start=parseTime(document.getElementById('uStart').value);
+  const end=parseTime(document.getElementById('uEnd').value);
+  if(start>=end){ showToast('结束时间必须晚于开始时间'); return; }
+  const state=document.getElementById('uState').value;
+  const weekStart=getWeekStart(currentDate);
+  const days=getWeekDays(weekStart);
+  let targetDays=[];
+  if(uniformScope==='daily') targetDays=days;
+  else if(uniformScope==='workday') targetDays=days.filter(d=>d.getDay()>=1 && d.getDay()<=5);
+  else if(uniformScope==='weekend') targetDays=days.filter(d=>d.getDay()===0 || d.getDay()===6);
+  for(let d of targetDays){
+    for(let h=0;h<24;h+=2){
+      if(h>=start && h<end) setCellState(d,h,state);
+    }
+  }
+  hideModal('uniformModal');
+  renderSettingEditor();
+  showToast('统一配置已应用');
+}
+
+function openTemplateModal(){
+  selectedTemplateId=null;
+  let html='';
+  templates.forEach(t=>{
+    html+=`<div class="template-row" data-id="${t.id}" onclick="highlightTemplate(this,${t.id})">
+      <div style="flex:1;">${t.name}</div>
+    </div>`;
+  });
+  document.getElementById('templateList').innerHTML=html;
+  showModal('templateModal');
+}
+function highlightTemplate(el,id){
+  document.querySelectorAll('.template-row').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTemplateId=id;
+}
+function selectTemplate(){
+  if(!selectedTemplateId){ showToast('请选择一个模板'); return; }
+  const t=templates.find(x=>x.id===selectedTemplateId);
+  if(t){ document.getElementById('templateName').value=t.name; }
+  hideModal('templateModal');
+  showToast('已选择模板：'+t.name);
+}
+
+function saveSetting(){
+  const name=document.getElementById('templateName').value.trim();
+  if(!name){ showToast('请输入预约时间模板名称'); return; }
+  if(settingMode==='template-list'){
+    if(editingTemplateId){
+      const t=templates.find(x=>x.id===editingTemplateId);
+      if(t) t.name=name;
+    } else {
+      const newId=templates.length?Math.max(...templates.map(t=>t.id))+1:1;
+      templates.push({id:newId,name:name});
+    }
+    showToast('模板已保存');
+    setTimeout(()=>showPage('setting'),800);
+  } else {
+    showToast('配置已保存');
+    setTimeout(()=>showPage('asset'),800);
+  }
+}
+
+function renderStatusPage(){
+  const tabs=[
+    {key:'base',label:'基本信息'},
+    {key:'listing',label:'上架详情'},
+    {key:'contract',label:'合同列表'},
+    {key:'reserve',label:'预定列表'},
+    {key:'history',label:'预约历史'}
+  ];
+  let html=`<div class="card" style="display:flex; gap:16px; align-items:center;">
+    <div style="font-size:16px; font-weight:500;">201会议室</div>
+    <div style="font-size:13px; color:#595959;">类型：会议室</div>
+    <div style="font-size:13px; color:#595959;">建科大楼 2F</div>
+    <span style="margin-left:auto;" class="tag tag-gn">可预约</span>
+  </div>
+  <div class="card">
+    <div class="tabs">${tabs.map(t=>`<div class="tab ${statusTab===t.key?'active':''}" onclick="switchStatusTab('${t.key}')">${t.label}</div>`).join('')}</div>
+    ${renderStatusTabContent()}
+  </div>`;
+  document.getElementById('content').innerHTML=html;
+}
+function switchStatusTab(key){ statusTab=key; renderStatusPage(); }
+function renderStatusTabContent(){
+  if(statusTab==='history'){
+    const currentTemplateName=templates[0]?.name||'未配置';
+    return `<div style="margin-bottom:12px; padding:10px 14px; background:#f6ffed; border:1px solid #b7eb8f; border-radius:6px; color:#389e0d; font-size:13px;">
+      当前使用的预约模板是：<strong>${currentTemplateName}</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div class="card-title" style="margin:0;">${statusViewMode==='week'?'时刻表':'日历表'}</div>
+      <div class="view-switch">
+        <button class="${statusViewMode==='week'?'active':''}" onclick="switchStatusView('week')">时刻表</button>
+        <button class="${statusViewMode==='month'?'active':''}" onclick="switchStatusView('month')">日历表</button>
+      </div>
+    </div>
+    ${statusViewMode==='week'?renderWeekView(false,'status'):renderMonthView(false,'status')}
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:#52c41a;"></div>可预约</div>
+      <div class="legend-item"><div class="legend-color" style="background:#ff4d4f;"></div>固定占用</div>
+      <div class="legend-item"><div class="legend-color" style="background:#e6f7ff; border:1px solid #91d5ff;"></div>2026法定工作日</div>
+      <div class="legend-item"><div class="legend-color" style="background:#f5f5f5; border:1px solid #d9d9d9;"></div>未配置/不可用</div>
+    </div>
+    <div class="card" style="margin-top:16px; margin-bottom:0;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div class="card-title" style="margin:0;">历史预约</div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-warning" onclick="showModal('reconfigModal')">重新配置</button>
+          <button class="btn btn-danger" onclick="showModal('closeModal')">临时关停</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>预约人</th><th>日期</th><th>时段</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td>张三</td><td>08-10</td><td>09:00-11:00</td><td><span class="tag tag-gn">已完成</span></td></tr>
+          <tr><td>李四</td><td>08-11</td><td>14:00-16:00</td><td><span class="tag tag-gy">待使用</span></td></tr>
+        </tbody>
+      </table>
+    </div>`;
+  }
+  const contents={
+    base:'<div style="padding:40px 0; text-align:center; color:#8c8c8c;">基本信息内容</div>',
+    listing:'<div style="padding:40px 0; text-align:center; color:#8c8c8c;">上架详情内容</div>',
+    contract:'<div style="padding:40px 0; text-align:center; color:#8c8c8c;">合同列表内容</div>',
+    reserve:'<div style="padding:40px 0; text-align:center; color:#8c8c8c;">预定列表内容</div>'
+  };
+  return contents[statusTab];
+}
+
+function showModal(id){ document.getElementById(id).classList.add('active'); }
+function hideModal(id){ document.getElementById(id).classList.remove('active'); }
+function confirmClose(){ const s=document.getElementById('closeStart').value; const e=document.getElementById('closeEnd').value; if(!s||!e){ showToast('请选择关停日期范围'); return; } showToast('已设置临时关停'); hideModal('closeModal'); }
+function confirmReconfig(){ hideModal('reconfigModal'); editingTemplateId=null; settingMode='asset'; showPage('setting','editor'); }
+
+showPage('asset');
+</script>
+</body>
+</html>
