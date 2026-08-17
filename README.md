@@ -2,7 +2,7 @@
 
 🔗 **交互原型演示**：https://ouyan617.github.io/ai-prototype-showcase/
 
-📄 **需求文档**：[空间预约管理PRD](https://ouyan617.github.io/ai-prototype-showcase/docs/prd.html)
+📄 **需求文档**：[空间预约管理PRD](https://ouyan617.github.io/ai-prototype-showcase/prd.html)
 
 ## 项目简介
 - 针对办公楼/园区场景设计的空间预约管理功能
