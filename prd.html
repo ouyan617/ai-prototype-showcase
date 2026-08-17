@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>空间预约系统 · 需求文档与系统规则逻辑（管理端 + 小程序端）</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>document.addEventListener('DOMContentLoaded',()=>{mermaid.initialize({startOnLoad:true,theme:'default',flowchart:{curve:'basis'},themeVariables:{fontSize:'14px'}});});</script>
+<style>
+:root{
+  --primary:#1890ff; --primary-bg:#e6f7ff; --text:#262626; --text-2:#595959; --text-3:#8c8c8c;
+  --border:#f0f0f0; --border-2:#e8e8e8; --bg:#f5f6fa; --card:#fff; --green:#52c41a; --red:#ff4d4f;
+  --orange:#fa8c16; --brown:#6b4423; --warn-bg:#fff7e6; --warn-border:#ffd591; --code-bg:#f6f8fa;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.7;}
+.toc{position:fixed;top:0;left:0;width:240px;height:100vh;overflow:auto;background:#1f2633;color:#b8c0cc;padding:20px 0;font-size:13px;z-index:50;}
+.toc h2{color:#fff;font-size:15px;padding:0 20px 12px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px;}
+.toc a{display:block;color:#b8c0cc;text-decoration:none;padding:5px 20px;}
+.toc a:hover,.toc a.cur{background:#2a3447;color:#fff;}
+.toc .sub{padding-left:34px;font-size:12px;color:#9aa4b2;}
+.main{margin-left:240px;padding:40px 56px 120px;max-width:1100px;}
+h1{font-size:26px;margin-bottom:6px;color:#0f172a;}
+h2{font-size:21px;margin:38px 0 14px;padding-left:12px;border-left:4px solid var(--primary);color:#0f172a;}
+h3{font-size:17px;margin:26px 0 10px;color:#1f2937;}
+h4{font-size:15px;margin:18px 0 8px;color:var(--text-2);}
+.meta{color:var(--text-3);font-size:13px;margin-bottom:20px;}
+.lead{background:var(--card);border:1px solid var(--border-2);border-left:4px solid var(--primary);border-radius:8px;padding:16px 20px;margin:18px 0;color:var(--text-2);}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px 22px;margin:16px 0;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;}
+th,td{border:1px solid var(--border-2);padding:9px 11px;text-align:left;vertical-align:top;}
+th{background:#fafafa;color:var(--text-2);font-weight:600;}
+tr:hover td{background:#fafcff;}
+.section-num{color:var(--primary);font-weight:700;}
+.tag{display:inline-block;padding:2px 9px;border-radius:4px;font-size:12px;line-height:1.6;}
+.tag-gn{background:#f6ffed;color:var(--green);border:1px solid #b7eb8f;}
+.tag-rd{background:#fff1f0;color:#f5222d;border:1px solid #ffa39e;}
+.tag-og{background:var(--warn-bg);color:var(--orange);border:1px solid var(--warn-border);}
+.tag-br{background:#f3ece6;color:var(--brown);border:1px solid #d9c2b0;}
+.tag-gy{background:#f5f5f5;color:#666;border:1px solid #d9d9d9;}
+.tag-bl{background:var(--primary-bg);color:var(--primary);border:1px solid #91d5ff;}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0;font-size:12px;}
+.legend-item{display:flex;align-items:center;gap:6px;}
+.legend-color{width:14px;height:14px;border-radius:3px;}
+.warn{background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:14px 18px;margin:14px 0;}
+.warn b{color:#ad6800;}
+.danger{background:#fff1f0;border:1px solid #ffa39e;border-radius:8px;padding:14px 18px;margin:14px 0;}
+.danger b{color:#cf1322;}
+.ok{background:#f6ffed;border:1px solid #b7eb8f;border-radius:8px;padding:14px 18px;margin:14px 0;}
+.ok b{color:#389e0d;}
+.note{background:var(--primary-bg);border:1px solid #91d5ff;border-radius:8px;padding:14px 18px;margin:14px 0;}
+.note b{color:#0a4d8c;}
+.mermaid{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px;margin:14px 0;overflow:auto;}
+.cap{font-size:12px;color:var(--text-3);margin:2px 0 0;}
+.code{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:12px 16px;font-family:"SFMono-Regular",Consolas,monospace;font-size:12.5px;color:#24292e;white-space:pre-wrap;margin:10px 0;}
+ul,ol{margin:8px 0 8px 22px;}
+li{margin:4px 0;}
+.pill{display:inline-block;background:var(--primary-bg);color:var(--primary);border-radius:12px;padding:1px 10px;font-size:12px;margin-right:4px;}
+.foot{margin-top:60px;padding-top:20px;border-top:1px solid var(--border-2);color:var(--text-3);font-size:12.5px;}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:6px 14px;font-size:13.5px;}
+.kv b{color:var(--text-2);}
+.swatch{display:inline-block;width:46px;height:14px;border-radius:3px;vertical-align:middle;margin-right:6px;border:1px solid rgba(0,0,0,.1);}
+</style>
+</head>
+<body>
+
+<nav class="toc">
+  <h2>目录</h2>
+  <a href="#ch1">第1章 概述</a>
+  <a href="#ch1-1" class="sub">1.1 目的与范围</a>
+  <a href="#ch1-2" class="sub">1.2 角色</a>
+  <a href="#ch1-3" class="sub">1.3 系统架构</a>
+  <a href="#ch1-4" class="sub">1.4 核心数据模型</a>
+  <a href="#ch1-5" class="sub">1.5 统一着色规范</a>
+  <a href="#ch2">第2章 管理端</a>
+  <a href="#ch2-1" class="sub">2.1 资产管理（预约状态）</a>
+  <a href="#ch2-2" class="sub">2.2 预约设置（模板）</a>
+  <a href="#ch2-3" class="sub">2.3 空间预约时间配置</a>
+  <a href="#ch2-4" class="sub">2.4 预约历史</a>
+  <a href="#ch3">第3章 小程序端</a>
+  <a href="#ch3-1" class="sub">3.1 首页与入口</a>
+  <a href="#ch3-2" class="sub">3.2 预约首页</a>
+  <a href="#ch3-3" class="sub">3.3 空间预约（选时段）</a>
+  <a href="#ch3-4" class="sub">3.4 预约成功 / 正在使用</a>
+  <a href="#ch3-5" class="sub">3.5 订单</a>
+  <a href="#ch4">第4章 跨端协同规则</a>
+  <a href="#ch5">第5章 设计决策与规则说明</a>
+  <a href="#ch6">第6章 全局边界与异常</a>
+  <a href="#appendix">附录：原型参考说明</a>
+</nav>
+
+<div class="main">
+
+<h1>空间预约系统 · 需求文档与系统规则逻辑</h1>
+<div class="meta">版本：V1（管理端 + 小程序端 合并版）　|　日期：2026-08-17　|　依据材料：管理端需求文档、小程序需求文档、空间预约管理端原型、空间预约小程序端原型</div>
+
+<div class="lead">
+本文档依据空间预约系统相关材料整合编写，遵循“功能概述 → 业务流程 → 详细规则表 → 状态流转 → 异常清单”的结构，将管理端与小程序端两套需求合并为一份完整需求文档与系统规则逻辑。技术字段命名由开发团队依据本文档中文语义自行定义。
+</div>
+
+<!-- ============ 第1章 ============ -->
+
+<h2 id="ch1">第1章 概述</h2>
+
+<h3 id="ch1-1">1.1 目的与范围</h3>
+<p><b>目的</b>：把建科大楼「空间预约」能力从管理端配置延伸到用户小程序自助预约，打通“管理端配置 → 小程序预约 → 订单回流 → 管理端留痕”的闭环。</p>
+<p><b>范围</b>：</p>
+<ul>
+  <li><b>管理端</b>：空间产品预约状态配置、预约时间模板管理、空间预约时间配置（时刻表/日历表）、预约历史（临时关停/重新配置）。</li>
+  <li><b>小程序端</b>：场地浏览与筛选、收藏、选时段预约、预约成功、正在使用（计时/碳电计量）、订单（未出行/历史）。</li>
+  <li><b>跨端</b>：小程序展示数据全部来源于管理端配置；小程序产生的订单回流到管理端预约历史。</li>
+</ul>
+
+<h3 id="ch1-2">1.2 角色</h3>
+<table>
+  <tr><th>角色</th><th>端</th><th>职责</th></tr>
+  <tr><td>空间管理员</td><td>管理端</td><td>维护空间产品、配置是否可预约与预约时段模板、查看预约历史、临时关停/重新配置。</td></tr>
+  <tr><td>普通用户（员工/访客）</td><td>小程序端</td><td>浏览场地、筛选、收藏、选时段预约、使用计时、查看个人订单。</td></tr>
+  <tr><td>系统（联动）</td><td>两端</td><td>管理端配置 → 小程序展示；小程序下单 → 管理端历史留痕；临时关停/固定占用 → 小程序实时不可约。</td></tr>
+</table>
+
+<h3 id="ch1-3">1.3 系统架构</h3>
+<div class="mermaid">
+flowchart TD
+    A(["管理端"])
+    B[("共享数据层<br/>空间产品 + 预约模板 + 时段单元")]
+    C(["小程序端"])
+    D[("订单数据")]
+    E{{"灵动应用"}}
+
+    A -->|"配置空间产品/是否可预约"| B
+    A -->|"配置时刻表/日历表/统一配置"| B
+    A -->|"临时关停/固定占用"| B
+    B -->|"可预约时段/场地信息/状态"| C
+    C -->|"创建/取消/开始/结束<br/>预约订单"| D
+    D -->|"订单回流：已使用/未使用"| B
+    B -->|"预约历史展示<br/>含真实预约着色"| A
+    E -.->|"碳电计量公式参照"| C
+
+    classDef pc fill:#e6f7ff,stroke:#1890ff,stroke-width:2px;
+    classDef data fill:#f6ffed,stroke:#52c41a,stroke-width:2px;
+    classDef mp fill:#fff7e6,stroke:#fa8c16,stroke-width:2px;
+    classDef ext fill:#f5f5f5,stroke:#8c8c8c,stroke-width:1px,stroke-dasharray: 5 5;
+    class A pc;
+    class B,D data;
+    class C mp;
+    class E ext;
+</div>
+<p class="cap">图 1-1 空间预约系统架构（管理端为唯一配置真源）</p>
+<p class="note"><b>说明</b>：管理端是<b>唯一配置真源</b>；小程序端是<b>纯消费端 + 订单生产端</b>；订单数据双向流转（小程序产生、管理端留痕展示）。</p>
+
+<h3 id="ch1-4">1.4 核心数据模型</h3>
+<table>
+  <tr><th>实体</th><th>关键字段（中文语义）</th><th>来源/说明</th></tr>
+  <tr><td><b>空间产品</b></td><td>空间名称、空间编号、空间类型、空间面积、可容纳人数、楼层、所属空间、预约状态、出租/自用、交易类型、使用状态、产品标签、列表操作列、<b>可预约配置（新增）</b>、<b>当前模板标识（新增）</b></td><td>管理端资产管理列表字段；新增“可预约配置”与“当前模板标识”。</td></tr>
+  <tr><td><b>预约模板</b></td><td>编号、名称（唯一）、绑定空间集合、工作日历（默认2026法定工作日）、时刻表（单元格状态）、统一配置（每日/工作日/非工作日）、其他设置（提前/超时/提前天数/最长时长/确认方式）</td><td>管理端预约设置。</td></tr>
+  <tr><td><b>时段单元</b></td><td>模板标识、空间标识、日期、小时、状态（可预约/固定占用/清除）</td><td>由模板与空间绑定后展开；小程序按此展示可约/不可约。</td></tr>
+  <tr><td><b>预约订单</b></td><td>编号、空间标识、用户微信标识、日期、开始时间、结束时间、状态（待使用/使用中/已完成/已取消）、来源=小程序</td><td>小程序产生；回流管理端预约历史。</td></tr>
+</table>
+<div class="note">
+<b>说明</b>：只有<b>已上架</b>的空间产品才可在基本信息中选择“可预约/不可预约”。选择“可预约”后，若尚未配置预约模板，资产管理列表的“预约状态”显示<b>“未配置”</b>；点击“未配置”进入空间预约时间配置页，选择预约时间模板。选择“不可预约”则直接显示“不可预约”。
+</div>
+
+<h3 id="ch1-5">1.5 统一着色规范（两端强制一致）</h3>
+<table>
+  <tr><th>颜色</th><th>含义</th></tr>
+  <tr><td><span class="swatch" style="background:#52c41a"></span>绿 #52c41a</td><td>可预约</td></tr>
+  <tr><td><span class="swatch" style="background:#ff4d4f"></span>红 #ff4d4f</td><td>固定占用 / 已预约占用</td></tr>
+  <tr><td><span class="swatch" style="background:#fa8c16"></span>橙 #fa8c16</td><td>已使用·预约且实际使用</td></tr>
+  <tr><td><span class="swatch" style="background:#6b4423"></span>褐 #6b4423</td><td>未使用·预约但未实际使用</td></tr>
+  <tr><td><span class="swatch" style="background:#e6f7ff"></span>淡蓝 #e6f7ff</td><td>法定工作日（未配置前）</td></tr>
+  <tr><td><span class="swatch" style="background:#f5f5f5"></span>淡灰 #f5f5f5</td><td>未配置/不可用</td></tr>
+</table>
+<div class="warn">
+<b>设计决策</b>：管理端原型中“已使用”曾使用灰色显示，与需求文档及图例不一致。统一规定：<b>已使用一律橙色，未使用一律褐色</b>。管理端原型需同步修正样式类与图例。
+</div>
+
+<!-- ============ 第2章 ============ -->
+
+<h2 id="ch2">第2章 管理端需求与规则</h2>
+
+<h3 id="ch2-1">2.1 资产管理（预约状态）</h3>
+<p>资产管理页在原有空间列表基础上，新增<b>“预约状态”展示列</b>，并在空间产品基本信息中新增<b>“是否可预约”配置字段</b>。</p>
+
+<h4>2.1.1 业务主流程</h4>
+<div class="mermaid">
+flowchart TD
+    S(["资产管理列表"]) --> Q{"预约状态"}
+    Q -->|"未配置"| C[/"进入空间预约时间配置"/]
+    Q -->|"可预约"| H(["进入预约历史"])
+    C --> S2["保存配置"]
+    S2 --> Q
+
+    classDef start fill:#f5f5f5,stroke:#595959,stroke-width:2px;
+    classDef action fill:#e6f7ff,stroke:#1890ff,stroke-width:2px;
+    classDef decision fill:#fff7e6,stroke:#fa8c16,stroke-width:2px;
+    class S start;
+    class C,H action;
+    class Q decision;
+</div>
+<p class="cap">图 2-1 资产管理预约状态业务主流程</p>
+
+<h4>2.1.2 预约状态派生规则（核心）</h4>
+<table>
+  <tr><th>规则</th><th>触发/场景</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-PC-01</td><td>列表展示某空间“预约状态”</td><td>空间已存在于资产管理列表</td><td>可预约配置 + 当前模板标识</td><td>可预约配置为可预约且无模板 → 未配置；可预约配置为可预约且有模板 → 可预约；可预约配置为不可预约 → 不可预约</td><td>—</td><td>三态必须互斥且唯一</td></tr>
+  <tr><td>R-PC-02</td><td>上架时初始化/管理员设置“是否可预约”</td><td>进入空间编辑，且空间已上架</td><td>可选值仅 {可预约, 不可预约}</td><td>写入可预约配置字段；上架时按出租/自用+交易类型初始化默认值：自用→不可预约；出租且收租金→不可预约；出租且开放→可预约</td><td>可预约配置更新</td><td>未上架空间不可设置；未保存退出视为放弃</td></tr>
+  <tr><td>R-PC-03</td><td>点击“预约状态”标签</td><td>标签可点击</td><td>状态=未配置</td><td>跳转“空间预约时间配置（资产管理入口）”，引导先配置模板</td><td>进入配置页</td><td>未配置不允许直接进入预约历史</td></tr>
+  <tr><td>R-PC-04</td><td>点击“预约状态”标签</td><td>标签可点击</td><td>状态=可预约</td><td>跳转“预约历史”页（基本信息/预约历史等标签页）</td><td>进入预约历史</td><td>不可预约状态不可进入预约历史</td></tr>
+</table>
+
+<h4>2.1.3 预约状态派生状态机</h4>
+<div class="mermaid">
+flowchart TD
+    START([开始]) -->|可预约配置为可预约且无模板| 未配置
+    START -->|可预约配置为不可预约| 不可预约
+    START -->|可预约配置为可预约且已绑定模板| 可预约
+    未配置 -->|绑定模板| 可预约
+    可预约 -->|解绑模板| 未配置
+    不可预约 -->|可预约配置改为可预约| 未配置
+    未配置 -->|可预约配置改为不可预约| 不可预约
+    可预约 -->|可预约配置改为不可预约| 不可预约
+    可预约 -->|临时关停生效| 临时关停覆盖
+    临时关停覆盖 -->|关停结束| 可预约
+
+    classDef stateStyle fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
+    class 未配置,可预约,不可预约,临时关停覆盖 stateStyle
+</div>
+<p class="cap">图 2-2 预约状态派生状态机</p>
+<p class="note">说明：本版本“是否可预约”为独立配置字段，上架时按空间属性初始化默认值（自用/收租金→不可预约；开放出租→可预约），管理员可手动覆盖。预约状态三态由“可预约配置”与“当前模板标识”共同决定。</p>
+
+<h3 id="ch2-2">2.2 预约设置（模板管理）</h3>
+<p>导航“预约设置”进入模板列表，支持增/删/改，并进入“空间预约时间配置”。</p>
+<table>
+  <tr><th>规则</th><th>触发动作</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-PC-10</td><td>查看预约设置列表</td><td>进入预约设置</td><td>—</td><td>列出全部模板（序号/名称/编辑/删除）</td><td>列表展示</td><td>空列表显示空态</td></tr>
+  <tr><td>R-PC-11</td><td>点击“增加预约时间模板”</td><td>列表页</td><td>—</td><td>进入配置页，模板名称<b>为空</b>待输入</td><td>进入编辑器（新增模式）</td><td>未输入名称不可保存（见 R-PC-14）</td></tr>
+  <tr><td>R-PC-12</td><td>点击“编辑”</td><td>列表行</td><td>—</td><td>进入配置页，名称自动填充原值</td><td>进入编辑器（编辑模式）</td><td>—</td></tr>
+  <tr><td>R-PC-13</td><td>点击“删除”</td><td>列表行</td><td>二次确认</td><td>删除模板；若被空间绑定则联动解绑</td><td>模板移除、关联空间当前模板标识清空</td><td>删除被绑定模板须提示“将解除 N 个空间绑定”</td></tr>
+  <tr><td>R-PC-14</td><td>保存模板（新增/编辑改名）</td><td>配置页点“配置”</td><td>名称非空 且 不与其它模板重名</td><td>保存并返回列表</td><td>模板持久化</td><td>重名 → 拦截并提示“名称已存在”</td></tr>
+</table>
+
+<h3 id="ch2-3">2.3 空间预约时间配置</h3>
+<p>编辑器左侧“绑定空间产品”树（资产管理入口无此树），右侧模板名称 + 工作日历 + 时刻表/日历表 + 统一配置 + 其他设置。</p>
+<table>
+  <tr><th>规则</th><th>触发动作</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-PC-20</td><td>绑定空间产品</td><td>非资产管理入口</td><td>勾选树节点（可单/多选，含父子联动）</td><td>绑定空间到当前模板；子节点随父勾选</td><td>绑定空间集合更新</td><td><b>一个空间仅允许绑定一个模板</b>；若目标空间已被其他模板绑定，必须提示冲突并阻止绑定</td></tr>
+  <tr><td>R-PC-21</td><td>编辑模式改名</td><td>编辑进入</td><td>改动名称</td><td>自动保存新名称（实时/离开保存）</td><td>名称更新</td><td>新名不得与别模板重名</td></tr>
+  <tr><td>R-PC-22</td><td>工作日历</td><td>编辑器</td><td>默认=2026法定工作日；可下载/上传</td><td>未上传则显示法定工作日；上传后覆盖</td><td>工作日历生效</td><td><b>未设置日历 → 默认不可预定</b></td></tr>
+  <tr><td>R-PC-23</td><td>时刻表边界</td><td>编辑器（时刻表）</td><td>默认 0:00–24:00</td><td>时刻表展示 0:00–24:00 全部时段</td><td>—</td><td>本版本统一默认 0:00–24:00，不再按空间产品独立配置边界</td></tr>
+  <tr><td>R-PC-24</td><td>右键单元格</td><td>时刻表单元格</td><td>左键选中、右键菜单</td><td>设为可预约（绿）/固定占有（红）/清除</td><td>单元格状态变更</td><td>清除仅撤销本单元格着色</td></tr>
+  <tr><td>R-PC-25</td><td>时刻表⇄日历表切换</td><td>切换按钮</td><td>日历表存在预约 → 当天变绿</td><td>两视图数据互通</td><td>视图切换</td><td>—</td></tr>
+  <tr><td>R-PC-26</td><td>每日/工作日/非工作日 统一配置</td><td>仅时刻表下出现</td><td>弹窗设起止时间 + 状态</td><td>批量填充对应天类型的单元格</td><td>时刻表立即着色</td><td>结束≤开始 → 拦截</td></tr>
+  <tr><td>R-PC-27</td><td>其他设置-预约有效时间</td><td>编辑器</td><td>提前X分/超时X分/场地X天前可预约/最长区间（时/天）</td><td>写入其他设置，约束小程序预约</td><td>—</td><td>最长区间与日期选择器联动校验</td></tr>
+  <tr><td>R-PC-28</td><td>预订确认方式</td><td>编辑器</td><td>人工确认（超时自动取消） / 自动确认</td><td>写入确认策略</td><td>—</td><td>当前版本实际均为自动审批，人工确认按键为功能保留</td></tr>
+  <tr><td>R-PC-29</td><td>点“配置”保存</td><td>编辑器</td><td>模板名合规</td><td>退回预约设置列表（新增/编辑）或资产管理列表（资产管理入口）</td><td>—</td><td>—</td></tr>
+</table>
+
+<h3 id="ch2-4">2.4 预约历史</h3>
+<p>从资产管理列表点击<b>“可预约”</b>状态进入。含：当前使用模板、时刻表（真实预约着色）、历史预约表、临时关停、重新配置。</p>
+<table>
+  <tr><th>规则</th><th>触发动作</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-PC-30</td><td>展示当前使用模板</td><td>进入预约历史</td><td>取空间的当前模板标识</td><td>顶部展示模板名</td><td>—</td><td>无绑定模板 → 提示“未配置模板”</td></tr>
+  <tr><td>R-PC-31</td><td>时刻表真实预约着色</td><td>预约历史-时刻表</td><td>某时段有真实订单</td><td>已使用→<b>橙</b>；未使用（取消/未到）→<b>褐</b></td><td>时段着色</td><td>原型把已使用画成灰 → 修正为橙</td></tr>
+  <tr><td>R-PC-32</td><td>历史预约表</td><td>预约历史</td><td>数据来自小程序订单</td><td>列表展示 预约人/日期/时段/状态（已完成/待使用）</td><td>—</td><td>空 → 空态</td></tr>
+  <tr><td>R-PC-33</td><td>临时关停</td><td>点“临时关停”</td><td>填起止日期+每天时段（无范围限制）+ 备注</td><td>关停时段以<b>深红</b>覆盖时刻表；期间小程序不可约</td><td>关停记录生效</td><td>日期/时段无上限限制</td></tr>
+  <tr><td>R-PC-34</td><td>重新配置</td><td>点“重新配置”</td><td>确认弹窗</td><td>跳转空间预约时间配置（资产管理入口）：<b>无绑定树</b>、顶部模板名+“选择模板”弹窗</td><td>进入单空间配置</td><td>不选模板须自命名且不与他重名</td></tr>
+  <tr><td>R-PC-35</td><td>周上下翻</td><td>时刻表/日历表</td><td>点上周/下周</td><td>切换周数据</td><td>视图日期变更</td><td>—</td></tr>
+</table>
+
+<!-- ============ 第3章 ============ -->
+
+<h2 id="ch3">第3章 小程序端需求与规则</h2>
+
+<h3 id="ch3-1">3.1 首页与入口</h3>
+<table>
+  <tr><th>规则</th><th>触发动作</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-MP-01</td><td>首页展示“空间预约”入口</td><td>小程序首页</td><td>“空间预约”为本次新增入口</td><td>只展示管理端“可预约”的空间产品卡片；卡片状态为“可预约”（可点击进入详情）或“忙碌”（禁用）</td><td>—</td><td>无置灰卡片；不可预约/未配置空间不出现在小程序</td></tr>
+  <tr><td>R-MP-02</td><td>点击“可预约”</td><td>卡片可点击</td><td>—</td><td>跳转预约首页（预约列表）</td><td>当前页面=预约首页</td><td>—</td></tr>
+</table>
+
+<h3 id="ch3-2">3.2 预约首页（列表 / 搜索 / 筛选 / 收藏）</h3>
+<div class="mermaid">
+flowchart TD
+    A(["预约首页"]) --> B["顶部位置：建科大楼"]
+    A --> C["搜索框：按名称"]
+    A --> D["筛选弹窗：类型/时段"]
+    A --> E["空间卡片列表"]
+    E --> F{"该空间某时段全不可约？"}
+    F -->|"是"| G["按钮显示忙碌且禁用"]
+    F -->|"否"| H["按钮显示可预约"]
+    E --> I["爱心收藏：灰变红"]
+
+    classDef page fill:#f5f5f5,stroke:#595959,stroke-width:2px;
+    classDef action fill:#e6f7ff,stroke:#1890ff,stroke-width:2px;
+    classDef decision fill:#fff7e6,stroke:#fa8c16,stroke-width:2px;
+    class A page;
+    class B,C,D,E,G,H,I action;
+    class F decision;
+</div>
+<p class="cap">图 3-1 预约首页列表/搜索/筛选/收藏流程</p>
+<table>
+  <tr><th>规则</th><th>触发动作</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-MP-10</td><td>空间卡片渲染</td><td>进入列表</td><td>图片/名称/地点/附加配置 来自管理端“空间资产-可预约”</td><td>展示卡片</td><td>—</td><td>仅展示管理端状态为“可预约”的空间</td></tr>
+  <tr><td>R-MP-11</td><td>预约时段条</td><td>卡片内</td><td>时段状态来自管理端预约配置</td><td>绿=可预约；红=不可约（含被他人预约占用）</td><td>—</td><td>有人预约→红，取消→绿（实时）</td></tr>
+  <tr><td>R-MP-12</td><td>可预约/忙碌按钮</td><td>卡片</td><td>该空间所有时段均不可约</td><td>显示“忙碌”且禁用；否则“可预约”</td><td>—</td><td>—</td></tr>
+  <tr><td>R-MP-13</td><td>名称搜索</td><td>输入搜索框</td><td>按名称模糊匹配</td><td>实时过滤列表</td><td>列表更新</td><td>无匹配 → 空态“暂无匹配的场地”</td></tr>
+  <tr><td>R-MP-14</td><td>类型/时段筛选</td><td>筛选弹窗</td><td>类型（办公空间/设备用房/会议室/阅览座）单/多选；时段（上午/下午/晚上/凌晨）</td><td>确定后按条件过滤；可重置</td><td>列表更新</td><td>阅览座纳入类型筛选</td></tr>
+  <tr><td>R-MP-15</td><td>收藏</td><td>点爱心</td><td>默认灰</td><td>点击变红并进收藏；再点取消</td><td>收藏集合变更</td><td>纯前端态，需登录后持久化</td></tr>
+  <tr><td>R-MP-16</td><td>阅览座（休息区）特殊逻辑</td><td>列表底部</td><td>类型=休息区</td><td>所有时段<b>永远显示绿色可预约</b></td><td>—</td><td>休息区不受预约状态影响，保持可预约</td></tr>
+</table>
+
+<h3 id="ch3-3">3.3 空间预约（详情 / 选时段）</h3>
+<table>
+  <tr><th>规则</th><th>触发动作</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-MP-20</td><td>进入详情</td><td>点“可预约”</td><td>—</td><td>展示图片+场地基本信息（来自管理端）+ 日期/起止时间选择器</td><td>当前页面=详情页</td><td>—</td></tr>
+  <tr><td>R-MP-21</td><td>日期选择</td><td>日期选择器</td><td>默认展示未来 7 天</td><td>可选日期受管理端工作日历 + “场地X天前可预约”约束</td><td>已选日期更新</td><td>超出可约范围日期不可选</td></tr>
+  <tr><td>R-MP-22</td><td>起止时间选择</td><td>时间选择器</td><td>0–24 整点</td><td>开始≤结束；受管理端“最长区间”约束</td><td>已选起止时间更新</td><td>超出开放时间或超最长区间 → 不可预约</td></tr>
+  <tr><td>R-MP-23</td><td>点“确定”</td><td>详情页</td><td>时段在管理端可约范围内且未被占用</td><td>生成待使用订单 → 跳转预约成功页</td><td>订单状态=待使用</td><td>时段冲突 → 提示“该时段已被预约”</td></tr>
+  <tr><td>R-MP-24</td><td>从订单进入详情</td><td>点未出行订单</td><td>订单状态=待使用</td><td>展示已预约时间，隐藏选择器，显示“开始订单/取消预约”</td><td>当前页面=详情页（从订单）</td><td>—</td></tr>
+</table>
+
+<h3 id="ch3-4">3.4 预约成功 / 正在使用</h3>
+<div class="mermaid">
+flowchart TD
+    A(["预约成功页"]) -->|"立即开始"| B(["正在使用页"])
+    A -->|"返回订单"| C(["订单页"])
+    B -->|"结束使用"| D(["订单页-历史订单"])
+    B -->|"实时"| E["计时+碳电计量"]
+
+    classDef page fill:#fff7e6,stroke:#fa8c16,stroke-width:2px;
+    classDef action fill:#e6f7ff,stroke:#1890ff,stroke-width:2px;
+    class A,B,C,D page;
+    class E action;
+</div>
+<p class="cap">图 3-2 预约成功 / 正在使用流程</p>
+<table>
+  <tr><th>规则</th><th>触发动作</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-MP-30</td><td>预约成功提示</td><td>确定后</td><td>—</td><td>展示“预约成功”，提供“立即开始/返回订单”</td><td>当前页面=成功页</td><td>—</td></tr>
+  <tr><td>R-MP-31</td><td>立即开始</td><td>成功页</td><td>—</td><td>订单状态=使用中 → 正在使用页</td><td>当前页面=使用页</td><td>—</td></tr>
+  <tr><td>R-MP-32</td><td>正在使用-计时</td><td>进入使用页</td><td>每秒+1</td><td>展示 时:分:秒 累计使用时间</td><td>计时秒数累加</td><td>—</td></tr>
+  <tr><td>R-MP-33</td><td>碳电计量</td><td>使用页</td><td>按灵动应用同款公式计算</td><td>实时展示碳排放与用电量累计值</td><td>实时累计</td><td>具体系数与单位由技术团队维护，不写公式</td></tr>
+  <tr><td>R-MP-34</td><td>结束使用</td><td>点结束</td><td>—</td><td>清除计时；订单状态=已完成 移入历史订单；该时段标记“已使用”回流管理端</td><td>当前页面=订单页（历史）</td><td>—</td></tr>
+</table>
+
+<h3 id="ch3-5">3.5 订单</h3>
+<div class="mermaid">
+flowchart TD
+    START([开始]) -->|小程序下单| 待使用
+    待使用 -->|立即开始| 使用中
+    待使用 -->|开始订单| 使用中
+    待使用 -->|取消订单| 已取消
+    待使用 -->|超时未开始| 已完成
+    使用中 -->|结束使用| 已完成
+    已完成 --> END([结束])
+    已取消 --> END
+
+    classDef stateStyle fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
+    class 待使用,使用中,已完成,已取消 stateStyle
+</div>
+<p class="cap">图 3-3 预约订单状态机</p>
+<table>
+  <tr><th>规则</th><th>触发动作</th><th>前置条件</th><th>判定条件</th><th>系统处理结果</th><th>后置状态</th><th>异常/边界</th></tr>
+  <tr><td>R-MP-40</td><td>订单分栏</td><td>订单页</td><td>未出行订单 / 历史订单</td><td>未出行=待使用；历史=已完成+已取消展示</td><td>—</td><td>默认展示历史订单（原型）</td></tr>
+  <tr><td>R-MP-41</td><td>点未出行订单</td><td>待使用卡片</td><td>—</td><td>进入详情，可“开始订单/取消预约”</td><td>当前页面=详情页</td><td>—</td></tr>
+  <tr><td>R-MP-42</td><td>取消预约</td><td>详情（从订单）</td><td>确认</td><td>移除待使用；该时段恢复绿色（可约）</td><td>订单→已取消</td><td>取消后管理端历史标记“未使用（褐）”</td></tr>
+  <tr><td>R-MP-43</td><td>开始订单</td><td>详情（从订单）</td><td>—</td><td>订单状态=使用中 → 正在使用</td><td>当前页面=使用页</td><td>—</td></tr>
+  <tr><td>R-MP-44</td><td>历史订单展示</td><td>历史栏</td><td>已完成</td><td>展示已完成订单（已结束）</td><td>—</td><td>—</td></tr>
+  <tr><td>R-MP-45</td><td>超时未开始</td><td>订单到达开始时间仍未开始</td><td>超时阈值触发</td><td>发送微信服务通知提醒用户；超时后自动转已完成，管理端该时段标记“未使用（褐）”</td><td>订单→已完成</td><td>阈值由管理端“其他设置-超时”配置决定</td></tr>
+</table>
+<div class="warn">
+<b>已使用 vs 未使用 的精确定义</b>：小程序订单<b>进入使用中并结束</b> → 管理端时刻表该时段<b>橙色（已使用）</b>；订单<b>取消 / 超时未开始</b> → 管理端该时段<b>褐色（未使用）</b>。两者均需在管理端预约历史“历史预约表”留痕，由小程序订单回流驱动。
+</div>
+
+<!-- ============ 第4章 ============ -->
+
+<h2 id="ch4">第4章 跨端协同规则（数据流向与一致性）</h2>
+
+<h3>4.1 数据流全景</h3>
+<div class="mermaid">
+flowchart LR
+    subgraph M ["管理端 配置真源"]
+        A1["空间产品 可预约配置"] --> T1["预约模板+时刻表"]
+    end
+    subgraph P ["小程序端 消费+生产"]
+        B1["场地卡片/时段"] --> B2["下单"]
+    end
+    subgraph O ["订单"]
+        B2 --> O1["待使用/使用中/已完成"]
+    end
+    T1 -->|"可约时段/场地信息"| B1
+    A1 -->|"是否可预约"| B1
+    O1 -->|"已使用/未使用 回流"| H1["管理端预约历史着色"]
+    T1 -.->|"临时关停/固定占用"| B1
+
+    classDef pc fill:#e6f7ff,stroke:#1890ff,stroke-width:2px;
+    classDef mp fill:#fff7e6,stroke:#fa8c16,stroke-width:2px;
+    classDef data fill:#f6ffed,stroke:#52c41a,stroke-width:2px;
+    class M,A1,T1 pc;
+    class P,B1,B2 mp;
+    class O,O1 data;
+    class H1 data;
+</div>
+<p class="cap">图 4-1 跨端数据流全景</p>
+
+<h3>4.2 强制一致性规则</h3>
+<table>
+  <tr><th>规则</th><th>内容</th><th>说明</th></tr>
+  <tr><td>C-01</td><td>小程序“可预约/忙碌”完全由管理端配置+实时订单决定</td><td>管理端改配置后小程序须实时刷新（或拉取时强一致）</td></tr>
+  <tr><td>C-02</td><td>小程序时段范围 = 管理端工作日历 ∩ 每天开放时间 ∩ 提前天数</td><td>不得出现管理端不可约但小程序可约</td></tr>
+  <tr><td>C-03</td><td>占用唯一性：同一空间同一时段仅允许一个待使用/使用中订单</td><td>下单冲突时后者失败</td></tr>
+  <tr><td>C-04</td><td>临时关停/固定占用的时段，小程序强制不可约（红）</td><td>优先级高于普通可预约</td></tr>
+  <tr><td>C-05</td><td>订单状态变更回流管理端，驱动预约历史着色（橙/褐）</td><td>见 R-MP-34 / R-PC-31 / R-MP-45</td></tr>
+  <tr><td>C-06</td><td>颜色语义两端一致（绿/红/橙/褐/淡蓝/淡灰）</td><td>见 1.5</td></tr>
+  <tr><td>C-07</td><td>小程序用户身份以微信标识为准</td><td>预约订单回流管理端时，预约人字段记录用户微信账号</td></tr>
+  <tr><td>C-08</td><td>一个空间产品仅允许绑定一个预约模板</td><td>跨模板绑定冲突须在管理端提示并阻止</td></tr>
+</table>
+
+<!-- ============ 第5章 ============ -->
+
+<h2 id="ch5">第5章 设计决策与规则说明</h2>
+<p>本章汇总需求文档、管理端原型、小程序原型之间的不一致点，并给出最终设计决策。优先级：<b>需求文档 > 统一设计规范 > 原型</b>；原型仅作交互参考，冲突以需求文档与设计规范为准。</p>
+
+<h3>5.1 预约状态真源</h3>
+<p>本版本“是否可预约”为独立配置字段，上架时按空间属性初始化默认值：自用→不可预约；出租且收租金→不可预约；出租且开放→可预约。可预约配置为可预约但无模板时，预约状态显示“未配置”；绑定模板后显示“可预约”。管理员可手动覆盖默认值。</p>
+
+<h3>5.2 时刻表时间边界</h3>
+<p>管理端需求文档原要求时刻表最早/最晚由“每天预约开放时间”动态决定，管理端原型写死 0:00–24:00。经确认，<b>本版本统一按 0:00–24:00 实现</b>，不再按空间产品独立配置边界。</p>
+
+<h3>5.3 已使用着色颜色</h3>
+<p>需求文档：已使用=橙色，未使用=褐色。管理端原型曾把“已使用”样式类设为灰色。最终统一为：<b>已使用一律橙色，未使用一律褐色</b>。管理端原型需同步修正样式类与图例。</p>
+
+<h3>5.4 小程序时段可选范围</h3>
+<p>小程序原型日期固定未来 7 天、时间 0–23 整点，未受管理端约束。最终规则：日期默认未来 7 天，受工作日历+“场地X天前可预约”约束；时间受“每天开放时间”+“最长区间”约束；越界不可选/不可提交。</p>
+
+<h3>5.5 空间类型分类</h3>
+<p>管理端：办公空间 / 会议室 / 展厅。小程序筛选：办公空间 / 设备用房 / 会议室 / 阅览座。最终统一类型字典为 {办公空间, 会议室, 展厅, 设备用房, 阅览座}，小程序筛选对齐；阅览座纳入类型筛选。</p>
+
+<h3>5.6 碳电计量公式</h3>
+<p>小程序端碳电计量按灵动应用同款公式计算，具体系数与展示单位由技术团队维护，需求文档不写公式。</p>
+
+<h3>5.7 空间-模板绑定关系</h3>
+<p>一个空间产品仅允许绑定一个预约模板。若尝试将已绑定其他模板的空间再次绑定，必须弹出冲突提示并阻止绑定。</p>
+
+<h3>5.8 已对齐/一致项</h3>
+<ul>
+  <li>“重新配置”无绑定树、单空间修改、含“选择模板”弹窗 —— 原型与需求文档一致。</li>
+  <li>临时关停“日期/时段无范围限制” —— 原型与需求文档一致。</li>
+  <li>未配置日历 → 默认不可预定 —— 原型与需求文档一致。</li>
+  <li>休息区永远绿色可预约 —— 已确认。</li>
+  <li>订单超时未开始自动转褐 + 微信服务通知 —— 已确认。</li>
+  <li>人工确认按键保留，但当前版本实际均为自动审批 —— 已确认。</li>
+</ul>
+
+<!-- ============ 第6章 ============ -->
+
+<h2 id="ch6">第6章 全局边界与异常清单</h2>
+<table>
+  <tr><th>编号</th><th>异常/边界场景</th><th>系统处理</th></tr>
+  <tr><td>E-01</td><td>网络超时/接口失败</td><td>展示“加载失败，点击重试”；不静默失败；关键写操作前二次确认。</td></tr>
+  <tr><td>E-02</td><td>并发配置冲突（两人同时改同一模板）</td><td>乐观锁：保存时校验版本号，冲突提示“数据已被他人修改，请刷新”。</td></tr>
+  <tr><td>E-03</td><td>删除被绑定模板</td><td>提示“将解除 N 个空间绑定”，确认后解绑并清空当前模板标识。</td></tr>
+  <tr><td>E-04</td><td>模板重名</td><td>新增/改名时实时校验，重名拦截并提示。</td></tr>
+  <tr><td>E-05</td><td>统一配置起止时间非法</td><td>结束≤开始 → 拦截提示。</td></tr>
+  <tr><td>E-06</td><td>空间-模板绑定冲突</td><td>目标空间已绑定其他模板 → 提示“该空间已绑定其他模板，请先解绑”并阻止。</td></tr>
+  <tr><td>E-07</td><td>模板时段超出空间时间边界</td><td>本版本已取消按空间独立边界，统一 0:00–24:00。</td></tr>
+  <tr><td>E-08</td><td>小程序下单时段冲突</td><td>该时段已有待使用/使用中订单 → 提示“已被预约”，阻止下单。</td></tr>
+  <tr><td>E-09</td><td>小程序选时段越界</td><td>超出管理端可约范围 → 不可选/不可提交。</td></tr>
+  <tr><td>E-10</td><td>未配置日历/未配置模板</td><td>默认不可预定；小程序对应空间不出现或显示不可约。</td></tr>
+  <tr><td>E-11</td><td>临时关停覆盖</td><td>关停时段深红覆盖一切可约/占用，优先级最高。</td></tr>
+  <tr><td>E-12</td><td>空状态</td><td>模板列表空、历史预约空、收藏空、订单空均有空态文案。</td></tr>
+  <tr><td>E-13</td><td>极限值</td><td>最长区间选“天”时跨多日校验；面积/人数输入非法拦截。</td></tr>
+  <tr><td>E-14</td><td>用户未登录收藏</td><td>收藏须登录态；未登录引导登录，避免丢失。</td></tr>
+  <tr><td>E-15</td><td>未上架空间不可预约</td><td>未上架空间不展示“是否可预约”配置入口；小程序不可见。</td></tr>
+</table>
+
+<!-- ============ 附录 ============ -->
+
+<h2 id="appendix">附录：原型参考说明</h2>
+<p>本需求文档与系统规则逻辑为先行产物，以下 HTML 演示文件为依据本文档制作的配套交互演示，用于规则验证与体验演示：</p>
+<ul>
+  <li><code>空间预约管理端V1.html</code>：管理端资产管理、预约设置、空间预约时间配置、预约历史交互演示。</li>
+  <li><code>空间预约小程序端V1.html</code>：小程序端首页入口、预约列表、筛选（类型含阅览座）、详情选时段、预约成功、正在使用、订单交互演示。</li>
+</ul>
+
+<div class="foot">空间预约系统 · 需求文档与系统规则逻辑（管理端 + 小程序端）　|　V1　|　2026-08-17</div>
+
+</div>
+</body>
+</html>
