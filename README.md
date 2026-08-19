@@ -1,6 +1,6 @@
 # AI 辅助生成的交互式原型 · 空间预约管理
 
-🔗 **交互原型演示**：https://ouyan617.github.io/ai-prototype-showcase/
+🔗 **交互原型演示**：[https://ouyan617.github.io/ai-prototype-showcase/](https://ouyan617.github.io/ai-prototype-showcase/)
 
 📄 **需求文档**：[空间预约管理PRD](https://ouyan617.github.io/ai-prototype-showcase/prd.html)
 
